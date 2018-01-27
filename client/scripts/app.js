@@ -5,7 +5,7 @@ var App = function() {
 
   this.message = {
     username: this.username,
-    text: this.msgContent,
+    text: this.text,
     roomname: this.roomname
   }
 };
@@ -44,6 +44,7 @@ App.prototype.fetch = function() {
     data: 'order=-createdAt&limit=100',
     success: function (data) {
     App.prototype.renderMessage.call(app, data);
+    // this.renderMessage(data)
       console.log('chatterbox: Message received', data);
     },
     error: function (data) {
@@ -104,7 +105,11 @@ app.init();
 $(document).ready(function() {
   $(document).on('click','#submit', function(e) {
     e.preventDefault();
-    app.message.text = $(document).find('#messageText').val();
+    // app.message.text = $(document).find('#messageText').val();
+    app.message.text = $('#messageText').val();
+    app.message.username = window.location.search.slice(10, window.location.search.length );
+
+    console.log($('#messageText').val())
     app.send(app.message);
     // App.prototype.send(message);
     // this.send(this.message);
