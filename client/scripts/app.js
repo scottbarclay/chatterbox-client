@@ -8,11 +8,15 @@ var App = function() {
     text: this.text,
     roomname: this.roomname
   }
+  this.friends = [];
 };
 
 App.prototype.init = function() {
-  //var app = new App();
-  this.fetch();
+  // setInterval(function(){
+  //   App.prototype.fetch.call(app)
+  // }, 500)
+   App.prototype.fetch.call(app)
+
 };
 App.prototype.escapeString = function(string) {
   if(string) {
@@ -27,6 +31,7 @@ App.prototype.send = (message) => {
     data: JSON.stringify(message),
     contentType: 'Application/json',
     success: function (data) {
+      App.prototype.fetch.call(app)
       console.log('chatterbox: Message sent', data);
     },
     error: function (data) {
@@ -36,14 +41,14 @@ App.prototype.send = (message) => {
   });
 };
 
-App.prototype.fetch = function() {
+App.prototype.fetch = function(friends) {
   $.ajax({
     // This is the url you should use to communicate with the parse API server.
     url: this.server,
     type: 'GET',
-    data: 'order=-createdAt&limit=100',
+    data: 'order=-createdAt&limit=1000',
     success: function (data) {
-    App.prototype.renderMessage.call(app, data);
+    App.prototype.renderMessage.call(app, data, friends);
     // this.renderMessage(data)
       console.log('chatterbox: Message received', data);
     },
@@ -55,10 +60,25 @@ App.prototype.fetch = function() {
 };
 
 App.prototype.clearMessages = function() {
-
+  $(".chat").remove()
 };
 
-App.prototype.renderMessage = function(data) {
+App.prototype.renderMessage = function(data, friends) {
+  if(friends !== undefined) {
+      var messages = data.results
+    for (var i = 0; i < messages.length; i++) {
+      if(friends.includes(messages[i].username)){
+    if($("#rooms option:selected").text() === messages[i].roomname){
+      //create the message for the text
+      var messageFormatted = '<p class="username"><a href="#">' + this.escapeString(messages[i].username) +  '</a></p>' + this.escapeString(messages[i].text);
+      // console.log(messages[i].username)
+      //we need to wrap them in chats divs
+      $("#chatsList").append('<div class="chat">' + messageFormatted + '</div>');
+      //make html/dom container
+    }
+  }
+}
+} else {
   //input is an object with an array of objects
   var rooms = [];
   //output should be messages appended to the chats div
@@ -66,32 +86,38 @@ App.prototype.renderMessage = function(data) {
   var messages = data.results
   //loop over all of them
   for (var i = 0; i < messages.length; i++) {
+    // console.log(messages[i].roomname)
     if(!rooms.includes(messages[i].roomname)){
     rooms.push(messages[i].roomname)
   }
+  if($("#rooms option:selected").text() === messages[i].roomname){
     //create the message for the text
-    var messageFormatted = '<p class="username">' + this.escapeString(messages[i].username) +  '</p>' + this.escapeString(messages[i].text);
+    var messageFormatted = '<p class="username"><a href="#">' + this.escapeString(messages[i].username) +  '</a></p>' + this.escapeString(messages[i].text);
     // console.log(messages[i].username)
     //we need to wrap them in chats divs
     $("#chatsList").append('<div class="chat">' + messageFormatted + '</div>');
     //make html/dom container
   }
+}
+
   rooms.forEach(function(room) {
     $("#rooms").append('<option>' + room + '</option>')
   })
   //$ chat div
+}
 };
 
 App.prototype.renderRoom = function(data) {
-  //create an array to hold our possible rooms from data
-  //loop thourgh the obj in data
-  //grab the roomname from each
-  //check for duplicate room names before adding
-  //push them into the array
-  //wrap each string in an option tag
-  //to append to the select
+  this.clearMessages();
+  this.fetch();
 
 };
+
+App.prototype.renderFriends = function(array) {
+  this.clearMessages();
+  this.fetch(array);
+
+}
 
 App.prototype.handleUsernameClick = function() {
 
@@ -104,14 +130,50 @@ app.init();
 
 $(document).ready(function() {
   $(document).on('click','#submit', function(e) {
+    // App.prototype.clearMessages();
     e.preventDefault();
     // app.message.text = $(document).find('#messageText').val();
     app.message.text = $('#messageText').val();
     app.message.username = window.location.search.slice(10, window.location.search.length );
-
-    console.log($('#messageText').val())
+    app.message.roomname = $("#rooms option:selected").text()
+    app.clearMessages();
+    // console.log($('#messageText').val())
     app.send(app.message);
     // App.prototype.send(message);
     // this.send(this.message);
+    app.fetch();
+  })
+  $(document).on('click','#clear', function(e) {
+    e.preventDefault();
+    // app.message.text = $(document).find('#messageText').val();
+    app.clearMessages();
+  })
+  $(document).on('change','#rooms', function(e) {
+    e.preventDefault();
+    // app.message.text = $(document).find('#messageText').val();
+    app.renderRoom();
+  })
+  $(document).on('click','#addRoom', function(e) {
+    e.preventDefault();
+    app.message.text = $('#messageText').val();
+    app.message.username = window.location.search.slice(10, window.location.search.length );
+    app.message.roomname = $('#roomAdder').val()
+    // console.log($('#roomAdder').val())
+    app.send(app.message);
+    app.fetch();
+  })
+  $(document).on('click','a', function(e) {
+
+    app.friends.push($(e.target).text());
+    // app.message.text = $(document).find('#messageText').val();
+    console.log(app.friends)
+
+
+  })
+  $(document).on('change','#friends', function(e) {
+    e.preventDefault();
+    // app.message.text = $(document).find('#messageText').val();
+    app.renderFriends(app.friends)
+
   })
 })

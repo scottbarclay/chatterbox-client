@@ -31,17 +31,23 @@
         <div>
           <span>
             Room:
-            <select id="rooms"></select>
-          </span>
+            <select id="rooms">
+              <option>lobby</option>
+            </select></span>
+            <span><input id="roomAdder" type="text" placeHolder="Create a new room" ></input>
+            <button id="addRoom">Add a Room</button></span>
         </div>
-        <input id="messageText" type="text">
+        <input id="messageText" type="text" placeHolder="Chat it up!">
 
       </input>
       <button id="submit">Submit</button>
+      <button id="clear">Clear Message List</button>
+      <input id="friends" type="checkBox">Filter by Friends</input>
       </form>
     </div>
     <div id="chats">
-      <ul id="chatsList"></ul>
+      <ul id="chatsList">
+      </ul>
     </div>
   </body>
 </html>
